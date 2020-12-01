@@ -18,10 +18,14 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
 from api.routes.organization.views import OrganizationViewSet
+from api.routes.agent.views import AgentViewSet
+
 
 # define and register routers of api
 router = DefaultRouter(trailing_slash=False)
 router.register("organizations", OrganizationViewSet, basename="organization")
+router.register("agents", AgentViewSet, basename="agent")
+
 
 
 urlpatterns = [
