@@ -28,6 +28,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         if serializer.is_valid(raise_exception=True):
             org_name = serializer.validated_data.get("name")
             org_type = serializer.validated_data.get("type")
+            #org_hosts = serializer.validated_data.get("hosts")
             try:
                 Organization.objects.get(name=org_name)
             except ObjectDoesNotExist:
@@ -39,16 +40,16 @@ class OrganizationViewSet(viewsets.ViewSet):
                 "locality": "changping"
             },
                 "type": org_type,
-                "name": org_name,
+                "name": org_name.split(".")[0].capitalize(),
                 "domain": org_name,
                 "enableNodeOUs": True,
-                "Specs": ["foo"]
+                "Specs": ["zoo"]
             }
-            cryptoconfig = CryptoConfig(org=org["name"])
+            cryptoconfig = CryptoConfig(org=org_name)
             cryptoconfig.create(org)
 
             cryptogen = CryptoGen()
-            cryptogen.generate(org_name=org["name"])
+            cryptogen.generate(org_name=org_name)
 
             organization = Organization(name=org_name)
             organization.save()

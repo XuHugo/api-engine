@@ -37,5 +37,5 @@ class CryptoGen:
 
 if __name__ == "__main__":
     cryptogen = CryptoGen()
-    cryptogen.generate(org_name="org1", output="crypto-config", config="crypto-config.yaml")
+    cryptogen.generate(org_name="orderer.cello.com", output="crypto-config", config="crypto-config.yaml")
     #cryptogen.extend(org_name="org1", input="crypto-config", config="crypto-config.yaml")

@@ -1,27 +1,26 @@
 from rest_framework import serializers
-from api.models import Organization
+from api.models import NetWork
 
 
-class OrganizationSerializer(serializers.ModelSerializer):
+class NetWorkSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Organization
+        model = NetWork
         fields = '__all__'
-        #fields = ["id", "name", "agent", "network", "channel", "status", "create_ts"]
 
 
-class OrganizationQuery(serializers.ModelSerializer):
+class NetWorkQuery(serializers.ModelSerializer):
     class Meta:
-        model = Organization
+        model = NetWork
         fields = ("name", "id")
         extra_kwargs = {"name": {"required": False}}
 
 
-class OrganizationCreateBody(serializers.ModelSerializer):
+class NetWorkCreateBody(serializers.ModelSerializer):
     class Meta:
-        model = Organization
-        fields = ("name", "type")
-        extra_kwargs = {"name": {"required": True}, "type": {"required": True}}
+        model = NetWork
+        fields = ("name", "consensus")
+        extra_kwargs = {"name": {"required": True}, "consensus": {"required": True}}
 
 
-class OrganizationIDSerializer(serializers.Serializer):
-    id = serializers.UUIDField(help_text="ID of Organization")
+class NetWorkIDSerializer(serializers.Serializer):
+    id = serializers.UUIDField(help_text="ID of NetWork")

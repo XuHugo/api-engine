@@ -2,58 +2,46 @@
 
 from rest_framework import viewsets, status
 from rest_framework.response import Response
-from api.models import Organization
-from api.lib.pki import CryptoGen, CryptoConfig
+from api.models import NetWork
+from api.lib.configtxgen import ConfigTX, ConfigTxGen
 from django.core.exceptions import ObjectDoesNotExist
-from api.routes.organization.serializers import (
-    OrganizationSerializer,
-    OrganizationCreateBody,
-    OrganizationIDSerializer,
-    OrganizationQuery,
+from api.routes.network.serializers import (
+    NetWorkSerializer,
+    NetWorkCreateBody,
+    NetWorkIDSerializer,
+    NetWorkQuery,
 )
 
 
-class OrganizationViewSet(viewsets.ViewSet):
+class NetWorkViewSet(viewsets.ViewSet):
 
     def list(self, request):
 
-        queryset = Organization.objects.all()
-        serializer = OrganizationSerializer(queryset, many=True)
+        queryset = NetWork.objects.all()
+        serializer = NetWorkSerializer(queryset, many=True)
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def create(self, request):
-
-        serializer = OrganizationCreateBody(data=request.data)
+        serializer = NetWorkCreateBody(data=request.data)
         if serializer.is_valid(raise_exception=True):
-            org_name = serializer.validated_data.get("name")
-            org_type = serializer.validated_data.get("type")
+            network_name = serializer.validated_data.get("name")
+            consensus = serializer.validated_data.get("consensus")
+            peers = serializer.validated_data.get("peers")
+            orderers = serializer.validated_data.get("orderers")
             try:
-                Organization.objects.get(name=org_name)
+                NetWork.objects.get(name=network_name)
             except ObjectDoesNotExist:
                 pass
 
-            org = {"ca": {
-                "country": "china",
-                "province": "beijing",
-                "locality": "changping"
-            },
-                "type": org_type,
-                "name": org_name,
-                "domain": org_name,
-                "enableNodeOUs": True,
-                "Specs": ["foo"]
-            }
-            cryptoconfig = CryptoConfig(org=org["name"])
-            cryptoconfig.create(org)
+            ConfigTX(network_name).create(consensus=consensus, orderers=orderers, peers=peers)
 
-            cryptogen = CryptoGen()
-            cryptogen.generate(org_name=org["name"])
+            ConfigTxGen(network_name).genesis()
 
-            organization = Organization(name=org_name)
-            organization.save()
+            network = NetWork(network_name)
+            network.save()
 
-            response = OrganizationIDSerializer(data=organization.__dict__)
+            response = NetWorkIDSerializer(data=network.__dict__)
             if response.is_valid(raise_exception=True):
                 return Response(
                     response.validated_data, status=status.HTTP_201_CREATED
@@ -63,8 +51,8 @@ class OrganizationViewSet(viewsets.ViewSet):
         pass
 
     def retrieve(self, request, pk=None):
-        queryset = Organization.Objects.all()
-        serializer = OrganizationSerializer(queryset, many=True)
+        queryset = NetWork.Objects.all()
+        serializer = NetWorkSerializer(queryset, many=True)
         return Response(serializer.data)
 
     def update(self, request, pk=None):

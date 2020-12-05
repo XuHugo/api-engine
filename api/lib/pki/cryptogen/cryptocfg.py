@@ -58,17 +58,17 @@ class CryptoConfig:
 
 
 if __name__ == "__main__":
-    cryptoconfig = CryptoConfig(org="org1")
+    cryptoconfig = CryptoConfig(org="orderer.cello.com")
     org = {"ca": {
         "country": "china",
         "province": "beijing",
         "locality": "changping"
     },
-        "type": "peer",
-        "name": "org1",
-        "domain": "org1.h3c.com",
+        "type": "orderer",
+        "name": "Orderer",
+        "domain": "orderer.cello.com",
         "enableNodeOUs": True,
-        "Specs": ["foo", "bar", "baz"]
+        "Specs": ["zoo"]
     }
     cryptoconfig.create(org)
     # org = {
