@@ -1,9 +1,10 @@
 import yaml
 import os
+from api.config import CELLO_HOME
 
 
 class ConfigTX:
-    def __init__(self, network, filepath="/opt/cello"):
+    def __init__(self, network, filepath=CELLO_HOME):
         self.filepath = filepath
         self.network = network
         self.orderer = {'BatchTimeout':'2s','OrdererType':"etcdraft",

@@ -20,7 +20,7 @@ class OrganizationCreateBody(serializers.ModelSerializer):
     class Meta:
         model = Organization
         fields = ("name", "type")
-        extra_kwargs = {"name": {"required": True}, "type": {"required": True}}
+        extra_kwargs = {"name": {"required": True}}
 
 
 class OrganizationIDSerializer(serializers.Serializer):

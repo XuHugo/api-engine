@@ -1,4 +1,5 @@
 
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
 import uuid
 
@@ -39,6 +40,7 @@ class NetWork(models.Model):
     name = models.CharField(max_length=128)
     type = models.CharField(max_length=128)
     consensus = models.CharField(max_length=128)
+    organizations = ArrayField(models.CharField(max_length=128, blank=True), default=list, null=True)
     version = models.CharField(max_length=128)
     create_ts = models.DateTimeField(auto_now_add=True)
 
@@ -48,7 +50,7 @@ class Node(models.Model):
     name = models.CharField(max_length=128)
     type = models.CharField(max_length=128)
     urls = models.URLField(max_length=200)
-    organization = models.ForeignKey("Organization", on_delete=models.CASCADE)
+    organization = models.ForeignKey("Organization", null=True, on_delete=models.CASCADE)
     status = models.CharField(max_length=128)
     create_ts = models.DateTimeField(auto_now_add=True)
     msp = models.FileField(upload_to=upload_to, max_length=128)

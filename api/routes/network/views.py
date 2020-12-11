@@ -2,7 +2,7 @@
 
 from rest_framework import viewsets, status
 from rest_framework.response import Response
-from api.models import NetWork
+from api.models import NetWork, Node, Organization
 from api.lib.configtxgen import ConfigTX, ConfigTxGen
 from django.core.exceptions import ObjectDoesNotExist
 from api.routes.network.serializers import (
@@ -27,15 +27,14 @@ class NetWorkViewSet(viewsets.ViewSet):
         if serializer.is_valid(raise_exception=True):
             network_name = serializer.validated_data.get("name")
             consensus = serializer.validated_data.get("consensus")
-            peers = serializer.validated_data.get("peers")
-            orderers = serializer.validated_data.get("orderers")
+            organizations = serializer.validated_data.get("organizations")
             try:
                 NetWork.objects.get(name=network_name)
             except ObjectDoesNotExist:
                 pass
-
-            ConfigTX(network_name).create(consensus=consensus, orderers=orderers, peers=peers)
-
+            for organization in organizations:
+                Organization.objects.get(name=organization)
+            ConfigTX(network_name).create(consensus=consensus, organizations=organizations)
             ConfigTxGen(network_name).genesis()
 
             network = NetWork(network_name)

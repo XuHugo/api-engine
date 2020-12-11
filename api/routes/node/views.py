@@ -2,7 +2,8 @@
 
 from rest_framework import viewsets, status
 from rest_framework.response import Response
-from api.models import Node
+from api.models import Node, Organization
+from api.lib.pki import CryptoGen, CryptoConfig
 from django.core.exceptions import ObjectDoesNotExist
 from api.routes.node.serializers import (
     NodeSerializer,
@@ -24,14 +25,27 @@ class NodeViewSet(viewsets.ViewSet):
     def create(self, request):
 
         serializer = NodeCreateBody(data=request.data)
+
         if serializer.is_valid(raise_exception=True):
-            name = serializer.validated_data.get("name")
+            node_name = serializer.validated_data.get("name")
+            node_type = serializer.validated_data.get("type")
+            organization = serializer.validated_data.get("organization")
+            org_name = organization["name"]
             try:
-                Node.objects.get(name=name)
+                Node.objects.get(name=node_name)
             except ObjectDoesNotExist:
                 pass
 
-            node = Node(name=name)
+            org = Organization.objects.get(name=org_name)
+
+            nodes = {
+                "type": node_type,
+                "Specs": [node_name]
+            }
+            CryptoConfig(org_name).update(nodes)
+            CryptoGen(org_name).extend()
+
+            node = Node(name=node_name, organization=org)
             node.save()
 
             response = NodeIDSerializer(data=node.__dict__)

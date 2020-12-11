@@ -1,32 +1,30 @@
 from subprocess import call
-import os
+from api.config import CELLO_HOME,FABRIC_TOOL
 
 
 class CryptoGen:
 
-    def __init__(self, filepath="/opt/cello", cryptogen="/opt/bin/cryptogen", version="2.2.0"):
-        self.cryptogen = cryptogen
+    def __init__(self, name, filepath=CELLO_HOME, cryptogen=FABRIC_TOOL, version="2.2.0"):
+        self.cryptogen = cryptogen + "/cryptogen"
         self.filepath = filepath
         self.version = version
+        self.name = name
 
-    def generate(self, org_name, output="crypto-config", config="crypto-config.yaml"):
+    def generate(self, output="crypto-config", config="crypto-config.yaml"):
         try:
-            call([self.cryptogen, "generate", "--output={}/{}/{}".format(self.filepath, org_name, output),
-                  "--config={}/{}/{}".format(self.filepath, org_name, config)])
+            call([self.cryptogen, "generate", "--output={}/{}/{}".format(self.filepath, self.name, output),
+                  "--config={}/{}/{}".format(self.filepath, self.name, config)])
         except Exception as e:
-            err_msg = "cryptogen generate fail! "
-            raise Exception(err_msg+str(e))
+            err_msg = "cryptogen generate fail for {}!".format(e)
+            raise err_msg
 
-    def showtemplate(self):
-        pass
-
-    def extend(self, org_name, input="crypto-config", config="./crypto-config.yaml"):
+    def extend(self, input="crypto-config", config="./crypto-config.yaml"):
         try:
-            call([self.cryptogen, "extend", "--input={}/{}/{}".format(self.filepath, org_name, input),
-                  "--config={}/{}/{}".format(self.filepath, org_name, config)])
+            call([self.cryptogen, "extend", "--input={}/{}/{}".format(self.filepath, self.name, input),
+                  "--config={}/{}/{}".format(self.filepath, self.name, config)])
         except Exception as e:
-            err_msg = "cryptogen extend fail! "
-            raise Exception(err_msg+str(e))
+            err_msg = "cryptogen extend fail for {}!".format(e)
+            raise err_msg
 
     def version(self):
         pass
@@ -34,8 +32,11 @@ class CryptoGen:
     def help(self):
         pass
 
+    def showtemplate(self):
+        pass
+
 
 if __name__ == "__main__":
-    cryptogen = CryptoGen()
-    cryptogen.generate(org_name="orderer.cello.com", output="crypto-config", config="crypto-config.yaml")
-    #cryptogen.extend(org_name="org1", input="crypto-config", config="crypto-config.yaml")
+    cryptogen = CryptoGen("org.cello.com")
+    #cryptogen.generate()
+    cryptogen.extend()

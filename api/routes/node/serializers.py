@@ -1,6 +1,12 @@
 
 from rest_framework import serializers
 from api.models import Node
+from api.routes.organization.serializers import (
+    OrganizationSerializer,
+    OrganizationCreateBody,
+    OrganizationIDSerializer,
+    OrganizationQuery,
+)
 
 
 class NodeSerializer(serializers.ModelSerializer):
@@ -17,10 +23,13 @@ class NodeQuery(serializers.ModelSerializer):
 
 
 class NodeCreateBody(serializers.ModelSerializer):
+    organization = OrganizationQuery()
     class Meta:
         model = Node
-        fields = ("name",)
-        extra_kwargs = {"name": {"required": True}}
+        fields = ("name", "type", "organization")
+        extra_kwargs = {"name": {"required": True},
+                        "type": {"required": True},
+                        "organization": {"required": True}}
 
 
 class NodeIDSerializer(serializers.Serializer):

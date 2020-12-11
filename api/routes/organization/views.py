@@ -1,6 +1,7 @@
 
 
 from rest_framework import viewsets, status
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from api.models import Organization
 from api.lib.pki import CryptoGen, CryptoConfig
@@ -28,28 +29,13 @@ class OrganizationViewSet(viewsets.ViewSet):
         if serializer.is_valid(raise_exception=True):
             org_name = serializer.validated_data.get("name")
             org_type = serializer.validated_data.get("type")
-            #org_hosts = serializer.validated_data.get("hosts")
             try:
                 Organization.objects.get(name=org_name)
             except ObjectDoesNotExist:
                 pass
 
-            org = {"ca": {
-                "country": "china",
-                "province": "beijing",
-                "locality": "changping"
-            },
-                "type": org_type,
-                "name": org_name.split(".")[0].capitalize(),
-                "domain": org_name,
-                "enableNodeOUs": True,
-                "Specs": ["zoo"]
-            }
-            cryptoconfig = CryptoConfig(org=org_name)
-            cryptoconfig.create(org)
-
-            cryptogen = CryptoGen()
-            cryptogen.generate(org_name=org_name)
+            CryptoConfig(org_name).create()
+            CryptoGen(org_name).generate()
 
             organization = Organization(name=org_name)
             organization.save()
@@ -70,4 +56,15 @@ class OrganizationViewSet(viewsets.ViewSet):
 
     def update(self, request, pk=None):
         pass
+
+    @action(methods=["post"], detail=True, url_path="<str:organization_id>/nodes")
+    def addnode(self, request, pk=None):
+
+        serializer = OrganizationAddNodeBody(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            org_name = serializer.validated_data.get("name")
+
+        CryptoConfig(org_name).update()
+        CryptoGen(org_name).extend()
+
 

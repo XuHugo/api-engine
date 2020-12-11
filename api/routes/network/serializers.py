@@ -18,8 +18,10 @@ class NetWorkQuery(serializers.ModelSerializer):
 class NetWorkCreateBody(serializers.ModelSerializer):
     class Meta:
         model = NetWork
-        fields = ("name", "consensus")
-        extra_kwargs = {"name": {"required": True}, "consensus": {"required": True}}
+        fields = ("name", "consensus", "organizations")
+        extra_kwargs = {"name": {"required": True},
+                        "consensus": {"required": True},
+                        "organizations":{"required": True}}
 
 
 class NetWorkIDSerializer(serializers.Serializer):

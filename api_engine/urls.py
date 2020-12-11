@@ -20,6 +20,8 @@ from rest_framework.routers import DefaultRouter
 from api.routes.organization.views import OrganizationViewSet
 from api.routes.agent.views import AgentViewSet
 from api.routes.network.views import NetWorkViewSet
+from api.routes.node.views import NodeViewSet
+
 
 
 # define and register routers of api
@@ -27,6 +29,7 @@ router = DefaultRouter(trailing_slash=False)
 router.register("organizations", OrganizationViewSet, basename="organization")
 router.register("agents", AgentViewSet, basename="agent")
 router.register("networks", NetWorkViewSet, basename="network")
+router.register("nodes", NodeViewSet, basename="node")
 
 
 urlpatterns = [
