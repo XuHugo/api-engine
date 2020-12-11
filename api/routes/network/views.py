@@ -32,12 +32,25 @@ class NetWorkViewSet(viewsets.ViewSet):
                 NetWork.objects.get(name=network_name)
             except ObjectDoesNotExist:
                 pass
+            orderers = []
+            peers = []
+            i = 0
             for organization in organizations:
-                Organization.objects.get(name=organization)
-            ConfigTX(network_name).create(consensus=consensus, organizations=organizations)
+                org = Organization.objects.get(name=organization)
+                orderers.append({"name":organization, "hosts":[]})
+                peers.append({"name":organization, "hosts":[]})
+                nodes = Node.objects.filter(organization=org)
+                for node in nodes:
+                    if node.type == "peer":
+                        peers[i]["hosts"].append({"name": node.name, "port": node.urls.split(":")[2]})
+                    elif node.type == "orderer":
+                        orderers[i]["hosts"].append({"name": node.name, "port": node.urls.split(":")[2]})
+                i = i+1
+
+            ConfigTX(network_name).create(consensus=consensus, orderers=orderers, peers=peers)
             ConfigTxGen(network_name).genesis()
 
-            network = NetWork(network_name)
+            network = NetWork(name=network_name)
             network.save()
 
             response = NetWorkIDSerializer(data=network.__dict__)

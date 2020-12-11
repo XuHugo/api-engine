@@ -26,7 +26,7 @@ class NodeCreateBody(serializers.ModelSerializer):
     organization = OrganizationQuery()
     class Meta:
         model = Node
-        fields = ("name", "type", "organization")
+        fields = ("name", "type", "organization", "urls")
         extra_kwargs = {"name": {"required": True},
                         "type": {"required": True},
                         "organization": {"required": True}}

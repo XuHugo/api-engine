@@ -29,6 +29,7 @@ class NodeViewSet(viewsets.ViewSet):
         if serializer.is_valid(raise_exception=True):
             node_name = serializer.validated_data.get("name")
             node_type = serializer.validated_data.get("type")
+            node_urls = serializer.validated_data.get("urls")
             organization = serializer.validated_data.get("organization")
             org_name = organization["name"]
             try:
@@ -45,7 +46,7 @@ class NodeViewSet(viewsets.ViewSet):
             CryptoConfig(org_name).update(nodes)
             CryptoGen(org_name).extend()
 
-            node = Node(name=node_name, organization=org)
+            node = Node(name=node_name, organization=org, urls=node_urls, type=node_type)
             node.save()
 
             response = NodeIDSerializer(data=node.__dict__)

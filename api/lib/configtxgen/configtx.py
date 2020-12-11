@@ -16,22 +16,22 @@ class ConfigTX:
         OrdererOrganizations = []
         OrdererAddress = []
         for orderer in orderers:
-            OrdererOrganizations.append(dict(Name=orderer["name"].split(".")[0].capitalize(),
-                                             ID='{}MSP'.format(orderer["name"].split(".")[0].capitalize()),
-                                             MSPDir='{}/{}/crypto-config/ordererOrganizations/{}/msp'.format(self.filepath,self.network,orderer['name']),
-                                             Policies=dict(Readers=dict(Type="Signature",Rule="OR('{}MSP.member')".format(orderer["name"].split(".")[0].capitalize())),
-                                                           Writers=dict(Type="Signature",Rule="OR('{}MSP.member')".format(orderer["name"].split(".")[0].capitalize())),
-                                                           Admins=dict(Type="Signature",Rule="OR('{}MSP.admin')".format(orderer["name"].split(".")[0].capitalize())))
+            OrdererOrganizations.append(dict(Name=orderer["name"].split(".")[0].capitalize() + "Orderer",
+                                             ID='{}MSP'.format(orderer["name"].split(".")[0].capitalize()+"Orderer"),
+                                             MSPDir='{}/{}/crypto-config/ordererOrganizations/{}/msp'.format(self.filepath,orderer["name"],orderer['name'].split(".", 1)[1]),
+                                             Policies=dict(Readers=dict(Type="Signature",Rule="OR('{}MSP.member')".format(orderer["name"].split(".")[0].capitalize()+"Orderer")),
+                                                           Writers=dict(Type="Signature",Rule="OR('{}MSP.member')".format(orderer["name"].split(".")[0].capitalize()+"Orderer")),
+                                                           Admins=dict(Type="Signature",Rule="OR('{}MSP.admin')".format(orderer["name"].split(".")[0].capitalize()+"Orderer")))
                                              ))
             for host in orderer['hosts']:
-                OrdererAddress.append('{}.{}:{}'.format(host['name'], orderer['name'], host["port"]))
+                OrdererAddress.append('{}.{}:{}'.format(host['name'], orderer['name'].split(".", 1)[1], host["port"]))
 
         PeerOrganizations = []
         for peer in peers:
             PeerOrganizations.append(dict(Name=peer["name"].split(".")[0].capitalize(),
                                           ID='{}MSP'.format(peer["name"].split(".")[0].capitalize()),
                                           MSPDir='{}/{}/crypto-config/peerOrganizations/{}/msp'.format(self.filepath,peer['name'],peer['name']),
-                                          AnchorPeers=[{'Port': peer["hosts"][0]["port"], 'Host': '{}.{}'.format(peer["hosts"][0]["name"],peer["name"])}],
+                                          #AnchorPeers=[{'Port': peer["hosts"][0]["port"], 'Host': '{}.{}'.format(peer["hosts"][0]["name"],peer["name"])}],
                                           Policies=dict(Readers=dict(Type="Signature",Rule="OR('{}MSP.peer', '{}MSP.admin','{}MSP.client')".format(peer["name"].split(".")[0].capitalize(),peer["name"].split(".")[0].capitalize(),peer["name"].split(".")[0].capitalize())),
                                                         Writers=dict(Type="Signature",Rule="OR('{}MSP.admin','{}MSP.client')".format(peer["name"].split(".")[0].capitalize(),peer["name"].split(".")[0].capitalize())),
                                                         Admins=dict(Type="Signature",Rule="OR('{}MSP.admin')".format(peer["name"].split(".")[0].capitalize())))
@@ -55,12 +55,12 @@ class ConfigTX:
             Consenters = []
             for orderer in orderers:
                 for host in orderer['hosts']:
-                    Consenters.append(dict(Host='{}.{}'.format(host['name'], orderer['name']),
+                    Consenters.append(dict(Host='{}.{}'.format(host['name'], orderer['name'].split(".", 1)[1]),
                                            Port=host['port'],
                                            ClientTLSCert='{}/{}/crypto-config/ordererOrganizations/{}/orderers/{}.{}/tls/server.crt'
-                                           .format(self.filepath,orderer['name'], orderer['name'],host['name'], orderer['name']),
+                                           .format(self.filepath,orderer['name'], orderer['name'].split(".", 1)[1],host['name'], orderer['name'].split(".", 1)[1]),
                                            ServerTLSCert='{}/{}/crypto-config/ordererOrganizations/{}/orderers/{}.{}/tls/server.crt'
-                                           .format(self.filepath,orderer['name'],orderer['name'], host['name'], orderer['name'])))
+                                           .format(self.filepath,orderer['name'],orderer['name'].split(".", 1)[1], host['name'], orderer['name'].split(".", 1)[1])))
             Option = option if option else self.raft_option
             Orderer['EtcdRaft'] = dict(Consenters=Consenters,Options=Option)
             Orderer["Policies"] = dict(Readers=dict(Type="ImplicitMeta",Rule="ANY Readers"),
