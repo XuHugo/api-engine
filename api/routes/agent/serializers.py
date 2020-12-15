@@ -1,5 +1,11 @@
 from rest_framework import serializers
 from api.models import Agent
+from api.routes.organization.serializers import (
+    OrganizationSerializer,
+    OrganizationCreateBody,
+    OrganizationIDSerializer,
+    OrganizationQuery,
+)
 
 
 class AgentSerializer(serializers.ModelSerializer):
@@ -9,13 +15,16 @@ class AgentSerializer(serializers.ModelSerializer):
 
 
 class AgentCreateBody(serializers.ModelSerializer):
+    organization = OrganizationQuery()
+
     class Meta:
         model = Agent
-        fields = ("name", "type", "urls")
+        fields = ("name", "type", "urls", "organization")
         extra_kwargs = {
             "name": {"required": True},
             "type": {"required": True},
             "urls": {"required": True},
+            "organization": {"required": True},
         }
 
 

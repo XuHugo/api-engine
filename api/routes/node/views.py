@@ -1,6 +1,7 @@
 
 
 from rest_framework import viewsets, status
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from api.models import Node, Organization
 from api.lib.pki import CryptoGen, CryptoConfig
@@ -56,7 +57,13 @@ class NodeViewSet(viewsets.ViewSet):
                 )
 
     def destroy(self, request, pk=None):
-        pass
+        try:
+            node = Node.objects.get(name=pk)
+            node.delete()
+        except ObjectDoesNotExist:
+            raise BaseException
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     def retrieve(self, request, pk=None):
         queryset = Node.Objects.all()
@@ -64,5 +71,14 @@ class NodeViewSet(viewsets.ViewSet):
         return Response(serializer.data)
 
     def update(self, request, pk=None):
+        pass
+
+    @action(methods=["post"], detail=True, url_path="operations")
+    def operate(self, request, pk=None):
+        """
+        Operate Node
+
+        Do some operation on node, start/stop/restart
+        """
         pass
 

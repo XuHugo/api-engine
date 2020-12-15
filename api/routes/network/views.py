@@ -50,7 +50,7 @@ class NetWorkViewSet(viewsets.ViewSet):
             ConfigTX(network_name).create(consensus=consensus, orderers=orderers, peers=peers)
             ConfigTxGen(network_name).genesis()
 
-            network = NetWork(name=network_name)
+            network = NetWork(name=network_name, consensus=consensus, organizations=organizations)
             network.save()
 
             response = NetWorkIDSerializer(data=network.__dict__)
@@ -60,7 +60,13 @@ class NetWorkViewSet(viewsets.ViewSet):
                 )
 
     def destroy(self, request, pk=None):
-        pass
+        try:
+            network = NetWork.objects.get(name=pk)
+            network.delete()
+        except ObjectDoesNotExist:
+            raise BaseException
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     def retrieve(self, request, pk=None):
         queryset = NetWork.Objects.all()

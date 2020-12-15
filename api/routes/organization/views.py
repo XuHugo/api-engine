@@ -47,7 +47,13 @@ class OrganizationViewSet(viewsets.ViewSet):
                 )
 
     def destroy(self, request, pk=None):
-        pass
+        try:
+            organization = Organization.objects.get(id=pk)
+            organization.delete()
+        except ObjectDoesNotExist:
+            raise BaseException
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     def retrieve(self, request, pk=None):
         queryset = Organization.Objects.all()
@@ -60,11 +66,12 @@ class OrganizationViewSet(viewsets.ViewSet):
     @action(methods=["post"], detail=True, url_path="<str:organization_id>/nodes")
     def addnode(self, request, pk=None):
 
-        serializer = OrganizationAddNodeBody(data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            org_name = serializer.validated_data.get("name")
-
-        CryptoConfig(org_name).update()
-        CryptoGen(org_name).extend()
+        # serializer = OrganizationAddNodeBody(data=request.data)
+        # if serializer.is_valid(raise_exception=True):
+        #     org_name = serializer.validated_data.get("name")
+        #
+        # CryptoConfig(org_name).update()
+        # CryptoGen(org_name).extend()
+        pass
 
 

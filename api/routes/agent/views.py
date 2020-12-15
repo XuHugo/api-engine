@@ -1,6 +1,6 @@
 
 from rest_framework import viewsets, status
-from api.models import Agent
+from api.models import Agent, Organization
 from rest_framework.response import Response
 from django.core.exceptions import ObjectDoesNotExist
 from api.routes.agent.serializers import (
@@ -14,7 +14,6 @@ from api.routes.agent.serializers import (
 class AgentViewSet(viewsets.ViewSet):
 
     def list(self, request):
-
         queryset = Agent.objects.all()
         serializer = AgentSerializer(queryset, many=True)
 
@@ -27,12 +26,15 @@ class AgentViewSet(viewsets.ViewSet):
             agent_name = serializer.validated_data.get("name")
             agent_type = serializer.validated_data.get("type")
             agent_urls = serializer.validated_data.get("urls")
+            agent_org = serializer.validated_data.get("organization")
+            org_name = agent_org["name"]
             try:
                 Agent.objects.get(name=agent_name)
             except ObjectDoesNotExist:
                 pass
+            org = Organization.objects.get(name=org_name)
 
-            agent = Agent(name=agent_name, type=agent_type, urls=agent_urls)
+            agent = Agent(name=agent_name, type=agent_type, urls=agent_urls, organization=org)
             agent.save()
 
             response = AgentIDSerializer(data=agent.__dict__)
@@ -42,7 +44,15 @@ class AgentViewSet(viewsets.ViewSet):
                 )
 
     def destroy(self, request, pk=None):
-        pass
+        try:
+            agent = Agent.objects.get(name=pk)
+            if agent.organization:
+                raise BaseException
+            agent.delete()
+        except ObjectDoesNotExist:
+            raise BaseException
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     def retrieve(self, request, pk=None):
         queryset = Agent.Objects.all()

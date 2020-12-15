@@ -24,6 +24,7 @@ class NodeQuery(serializers.ModelSerializer):
 
 class NodeCreateBody(serializers.ModelSerializer):
     organization = OrganizationQuery()
+
     class Meta:
         model = Node
         fields = ("name", "type", "organization", "urls")

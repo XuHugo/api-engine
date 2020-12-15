@@ -1,10 +1,26 @@
+#
+# SPDX-License-Identifier: Apache-2.0
+#
 import yaml
 import os
 from api.config import CELLO_HOME
 
 
 class CryptoConfig:
+    """Class represents crypto-config yaml."""
+
     def __init__(self, name, file="crypto-config.yaml", country="CN", locality="BJ", province="CP", enablenodeous=True, filepath=CELLO_HOME):
+        """init CryptoConfig
+                param:
+                    name: organization's name
+                    file: crypto-config.yaml
+                    country: country
+                    locality: locality
+                    province: province
+                    enablenodeous: enablenodeous
+                    filepath: cello's working directory
+                return:
+        """
         self.filepath = filepath
         self.name = name
         self.country = country
@@ -14,6 +30,10 @@ class CryptoConfig:
         self.file = file
 
     def create(self) -> None:
+        """create the crypto-config.yaml
+                param
+                return:
+        """
         try:
             network = {}
             for item in ["Peer", "Orderer"]:
@@ -48,6 +68,11 @@ class CryptoConfig:
             raise Exception(err_msg)
 
     def update(self, org_info: any) -> None:
+        """update the crypto-config.yaml
+                param:
+                    org_info: Node of type peer or orderer
+                return:
+        """
         try:
             with open('{}/{}/{}'.format(self.filepath, self.name, self.file), 'r+', encoding='utf-8') as f:
                 network = yaml.load(f, Loader=yaml.FullLoader)
@@ -68,19 +93,13 @@ class CryptoConfig:
             raise Exception(err_msg)
 
     def delete(self):
+        """delete the crypto-config.yaml
+                param:
+                return:
+        """
         try:
             os.system('rm -rf {}/{}'.format(self.filepath, self.name))
         except Exception as e:
             err_msg = "CryptoConfig delete failed for {}!".format(e)
             raise Exception(err_msg)
 
-
-if __name__ == "__main__":
-    cryptoconfig = CryptoConfig("org.cello.com")
-    #cryptoconfig.create()
-    org = {
-        "type": "peer",
-        "Specs": ["foo2", "bar2", "baz2"]
-    }
-    cryptoconfig.update(org)
-    # cryptoconfig.delete()
