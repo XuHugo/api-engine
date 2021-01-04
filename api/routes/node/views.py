@@ -1,5 +1,10 @@
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+from api.utils import zipDir
+from api.config import CELLO_HOME
 
-
+from django.core.files.base import File
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -12,7 +17,7 @@ from api.routes.node.serializers import (
     NodeIDSerializer,
     NodeQuery,
 )
-
+import chardet
 
 class NodeViewSet(viewsets.ViewSet):
 
@@ -46,10 +51,33 @@ class NodeViewSet(viewsets.ViewSet):
             }
             CryptoConfig(org_name).update(nodes)
             CryptoGen(org_name).extend()
+            if node_type == "peer":
+                dir_msp = "{}/{}/crypto-config/peerOrganizations/{}/peers/{}/msp"\
+                    .format(CELLO_HOME, org_name, org_name, node_name+"."+org_name)
+            else:
+                dir_msp = "{}/{}/crypto-config/ordererOrganizations/{}/orderers/{}/msp"\
+                    .format(CELLO_HOME, org_name, org_name.split(".", 1)[1], node_name+"."+org_name)
+
+            zipDir(dir_msp, "/opt/msp.zip")
+            f_msp = open("/opt/msp.zip", "rb")
+            print(chardet.detect(f_msp.readline()))
+
+            if node_type == "peer":
+                dir_tls = "{}/{}/crypto-config/peerOrganizations/{}/peers/{}/tls" \
+                    .format(CELLO_HOME, org_name, org_name, node_name + "." + org_name)
+            else:
+                dir_tls = "{}/{}/crypto-config/ordererOrganizations/{}/orderers/{}/msp"\
+                    .format(CELLO_HOME, org_name, org_name.split(".", 1)[1], node_name+"."+org_name)
+
+            zipDir(dir_tls, "/opt/tls.zip")
+            f_tls = open("/opt/tls.zip", "rb")
 
             node = Node(name=node_name, organization=org, urls=node_urls, type=node_type)
+            node.msp.save("msp.zip", File(f_msp))
+            node.tls.save("tls.zip", File(f_tls))
             node.save()
-
+            f_msp.close()
+            f_tls.close()
             response = NodeIDSerializer(data=node.__dict__)
             if response.is_valid(raise_exception=True):
                 return Response(

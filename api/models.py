@@ -5,11 +5,9 @@ import uuid
 
 # Create your models here.
 
-MEDIA_ROOT = "/opt"
-
 
 def upload_to(instance, filename):
-    return '/'.join([MEDIA_ROOT, instance.user_name, filename])
+    return '{}/{}'.join([instance.user_name, filename])
 
 
 class Organization(models.Model):
@@ -45,6 +43,18 @@ class NetWork(models.Model):
     create_ts = models.DateTimeField(auto_now_add=True)
 
 
+def node_msp(instance, filename):
+    return '{}/{}/{}'.format(instance.organization.name, instance.name, filename)
+
+
+def node_tls(instance, filename):
+    return '{}/{}/{}'.format(instance.organization.name, instance.name, filename)
+
+
+def node_config(instance, filename):
+    return '{}/{}/{}'.format(instance.organization.name, instance.name, filename)
+
+
 class Node(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
     name = models.CharField(max_length=128)
@@ -53,9 +63,9 @@ class Node(models.Model):
     organization = models.ForeignKey("Organization", null=True, on_delete=models.CASCADE)
     status = models.CharField(max_length=128)
     create_ts = models.DateTimeField(auto_now_add=True)
-    msp = models.FileField(upload_to=upload_to, max_length=128)
-    tls = models.FileField(upload_to=upload_to, max_length=128)
-    config_file = models.FileField(upload_to=upload_to, max_length=128)
+    msp = models.FileField(upload_to=node_msp, max_length=128)
+    tls = models.FileField(upload_to=node_tls, max_length=128)
+    config_file = models.FileField(upload_to=node_config, max_length=128)
 
 
 class User(models.Model):

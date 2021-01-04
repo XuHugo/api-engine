@@ -1,18 +1,47 @@
+#
+# SPDX-License-Identifier: Apache-2.0
+#
 import yaml
 import os
 from api.config import CELLO_HOME
 
 
 class ConfigTX:
-    def __init__(self, network, filepath=CELLO_HOME):
+    """Class represents crypto-config yaml."""
+
+    def __init__(self, network, filepath=CELLO_HOME, orderer=None, raft_option=None):
+        """init ConfigTX
+                param:
+                    network: network's name
+                    orderer: configuration of output block
+                    raft_option: configuration of raft
+                    filepath: cello's working directory
+                return:
+        """
         self.filepath = filepath
         self.network = network
-        self.orderer = {'BatchTimeout':'2s','OrdererType':"etcdraft",
-                        'BatchSize':{'AbsoluteMaxBytes':'98 MB','MaxMessageCount':2000,'PreferredMaxBytes':'10 MB'}}
-        self.raft_option = {'TickInterval':"600ms",'ElectionTick':10,'HeartbeatTick':1, 'MaxInflightBlocks':5,'SnapshotIntervalSize':"20 MB"}
+        self.orderer = {'BatchTimeout': '2s',
+                        'OrdererType': "etcdraft",
+                        'BatchSize': {'AbsoluteMaxBytes': '98 MB',
+                                      'MaxMessageCount': 2000,
+                                      'PreferredMaxBytes': '10 MB'}} if not orderer else orderer
+        self.raft_option = {'TickInterval': "600ms",
+                            'ElectionTick': 10,
+                            'HeartbeatTick': 1,
+                            'MaxInflightBlocks': 5,
+                            'SnapshotIntervalSize': "20 MB"} if not raft_option else raft_option
 
     def create(self, consensus, orderers, peers, orderer_cfg=None, application=None, option=None):
-
+        """create the cryptotx.yaml
+                param:
+                    consensus:consensus
+                    orderers:the list of orderer
+                    peers: the list of peer
+                    orderer_cfg: the config of orderer
+                    application: application
+                    option: option
+                return:
+        """
         OrdererOrganizations = []
         OrdererAddress = []
         for orderer in orderers:
@@ -27,6 +56,7 @@ class ConfigTX:
                 OrdererAddress.append('{}.{}:{}'.format(host['name'], orderer['name'].split(".", 1)[1], host["port"]))
 
         PeerOrganizations = []
+
         for peer in peers:
             PeerOrganizations.append(dict(Name=peer["name"].split(".")[0].capitalize(),
                                           ID='{}MSP'.format(peer["name"].split(".")[0].capitalize()),
@@ -51,28 +81,28 @@ class ConfigTX:
                    }
 
 
-        if consensus == 'etcdraft':
+        if consensus=='etcdraft':
             Consenters = []
             for orderer in orderers:
                 for host in orderer['hosts']:
                     Consenters.append(dict(Host='{}.{}'.format(host['name'], orderer['name'].split(".", 1)[1]),
                                            Port=host['port'],
                                            ClientTLSCert='{}/{}/crypto-config/ordererOrganizations/{}/orderers/{}.{}/tls/server.crt'
-                                           .format(self.filepath,orderer['name'], orderer['name'].split(".", 1)[1],host['name'], orderer['name'].split(".", 1)[1]),
+                                           .format(self.filepath, orderer['name'], orderer['name'].split(".", 1)[1],host['name'], orderer['name'].split(".", 1)[1]),
                                            ServerTLSCert='{}/{}/crypto-config/ordererOrganizations/{}/orderers/{}.{}/tls/server.crt'
-                                           .format(self.filepath,orderer['name'],orderer['name'].split(".", 1)[1], host['name'], orderer['name'].split(".", 1)[1])))
+                                           .format(self.filepath, orderer['name'], orderer['name'].split(".", 1)[1], host['name'], orderer['name'].split(".", 1)[1])))
             Option = option if option else self.raft_option
             Orderer['EtcdRaft'] = dict(Consenters=Consenters,Options=Option)
-            Orderer["Policies"] = dict(Readers=dict(Type="ImplicitMeta",Rule="ANY Readers"),
-                                       Writers=dict(Type="ImplicitMeta",Rule="ANY Writers"),
-                                       Admins=dict(Type="ImplicitMeta",Rule="MAJORITY Admins"),
+            Orderer["Policies"] = dict(Readers=dict(Type="ImplicitMeta", Rule="ANY Readers"),
+                                       Writers=dict(Type="ImplicitMeta", Rule="ANY Writers"),
+                                       Admins=dict(Type="ImplicitMeta", Rule="MAJORITY Admins"),
                                        BlockValidation=dict(Type="ImplicitMeta",Rule="MAJORITY Writers"))
             #Profiles['TwoOrgsOrdererGenesis']['Orderer']['EtcdRaft'] = dict(Consenters=Consenters, Options=Option)
 
         Application = application if application else {'Organizations': None,
-                                                       "Policies":dict(Readers=dict(Type="ImplicitMeta",Rule="ANY Readers"),
-                                                                       Writers=dict(Type="ImplicitMeta",Rule="ANY Writers"),
-                                                                       Admins=dict(Type="ImplicitMeta",Rule="MAJORITY Admins"))
+                                                       "Policies": dict(Readers=dict(Type="ImplicitMeta", Rule="ANY Readers"),
+                                                                       Writers=dict(Type="ImplicitMeta", Rule="ANY Writers"),
+                                                                       Admins=dict(Type="ImplicitMeta", Rule="MAJORITY Admins"))
         }
         Profiles = {'TwoOrgsOrdererGenesis': {
             # 'Orderer': {'BatchTimeout': orderer_cfg['BatchTimeout'] if orderer_cfg else self.orderer['BatchTimeout'],
@@ -81,7 +111,7 @@ class ConfigTX:
             #             'OrdererType': consensus if consensus else self.orderer['OrdererType'],
             #             'BatchSize': orderer_cfg['BatchSize'] if orderer_cfg else self.orderer['BatchSize']
             #             },
-            "Orderer":Orderer,
+            "Orderer": Orderer,
             'Consortiums': {'SampleConsortium': {'Organizations': PeerOrganizations}},
             "Policies": dict(Readers=dict(Type="ImplicitMeta", Rule="ANY Readers"),
                              Writers=dict(Type="ImplicitMeta", Rule="ANY Writers"),
@@ -95,12 +125,16 @@ class ConfigTX:
             yaml.dump(configtx, f)
 
     def update(self):
+        """update the cryptotx.yaml
+                param:
+                return:
+        """
         pass
 
 
 if __name__ == "__main__":
-    orderers=[{"name":"orderer.cello.com","hosts":[{"name": "zoo", "port":8051}]}]
+    orderers=[{"name":"org1.cello.com","hosts":[{"name": "orderer1", "port":8051}]}]
     #peers = [{"name": "org1.cello.com", "hosts": [{"name": "foo", "port": 7051},{"name": "car", "port": 7052}]},
     #         {"name": "org2.cello.com", "hosts": [{"name": "zoo", "port": 7053}]}]
     peers = [{"name": "org1.cello.com", "hosts": [{"name": "foo", "port": 7051}, {"name": "car", "port": 7052}]}]
-    ConfigTX("test").create(consensus="etcdraft", orderers=orderers, peers=peers)
+    ConfigTX("test3").create(consensus="etcdraft", orderers=orderers, peers=peers)
